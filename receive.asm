@@ -66,15 +66,18 @@ serial:		jb ti, trans
 					add A, sbuf
 					mov R1, A
 					sjmp exit
-		cond6:	mov A, R2
-			clr c
-			subb A, R3
-			cjne A, #05h, cond7 ;if(R2-R3==5)
+		cond6:	;mov A, R2
+			;clr c
+			;subb A, R3
+			;cjne A, #05h, cond7 ;if(R2-R3==5)
+			cjne R3, #00h, cond7
 				;checksum check
 				mov A, R1
 				cpl A
 				add A, #01h
 				mov R1, A
+				mov R2, #00h
+				mov R1, #00h
 				clr c
 				subb A, sbuf
 				cjne A, #00h, invalid
@@ -88,6 +91,7 @@ serial:		jb ti, trans
 			add A, sbuf
 			mov R1, A
 			inc dptr
+			dec R3
 		exit:	inc R2
 			clr ri
 			reti

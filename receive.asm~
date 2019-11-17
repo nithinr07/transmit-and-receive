@@ -22,17 +22,21 @@ main:		mov tmod, #20h ;timer1 mode 2
 		mov scon, #50h
 		mov ie, #90h
 		mov R1, #00h
-		mov R2, #00h
+		mov R2, #56h
 		setb tr1
 		setb ri
 		sjmp $
 
 serial:		jb ti, trans
+		mov A, sbuf
+		cjne A, #3ah, endcondn
+		endcondn: end
+		mov R2, #00h
 		cond1:	cjne R2, #00h, cond2
 			mov A, sbuf
-			cjne A, #0ffh, continue
+			;cjne A, #0ffh, continue
 			;execute code
-			end
+			;end
 			continue: sjmp exit
 		cond2:	cjne R2, #01h, cond3
 			mov R3, sbuf
@@ -57,7 +61,7 @@ serial:		jb ti, trans
 		cond5:	cjne R2, #04h, cond6
 			mov A, sbuf
 			sub_cond1:	cjne A, #01h, sub_cond2
-					end
+					end ;execute code
 			sub_cond2:	mov A, R1
 					add A, sbuf
 					mov R1, A
@@ -68,6 +72,9 @@ serial:		jb ti, trans
 			cjne A, #05h, cond7 ;if(R2-R3==5)
 				;checksum check
 				mov A, R1
+				cpl A
+				add A, #01h
+				mov R1, A
 				clr c
 				subb A, sbuf
 				cjne A, #00h, invalid
