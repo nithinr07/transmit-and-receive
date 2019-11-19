@@ -3,22 +3,17 @@ progmemtest                                                                     
 0003 C083                2     push dph
 0005 C082                3     push dpl
 0007 90ED00              4     mov dptr, #0ed00h
-000A 74AF                5     mov A, #0afh
-000C F0                  6     movx @dptr, A
-000D D082                7     pop dpl
-000F D083                8     pop dph
-0011 F0                  9     movx @dptr, A
-0012 E4                 10     clr A
-0013 93                 11     movc A, @A+dptr
-0014 B4AF03             12     cjne A, #0afh, err
-0017 020000             13     ljmp 0000h
-001A 0204FD             14     err: ljmp 04fdh
+000A F0                  5     movx @dptr, A
+000B D082                6     pop dpl
+000D D083                7     pop dph
+000F F0                  8     movx @dptr, A
+0010 22                  9     ret
 ****WARNING:Missing`END'directive
 ASSEMBLY COMPLETE, NO ERRORS FOUND, 1 WARNING
 
 
 ERROR SUMMARY:
-Line 14, WARNING:Missing`END'directive
+Line 9, WARNING:Missing`END'directive
 
 SYMBOL TABLE:
 ??MCU_8051_IDE . . . . . . . . . . .  N  NUMB  8051H  NOT USED
@@ -83,7 +78,6 @@ DPL. . . . . . . . . . . . . . . . .  D  ADDR  0082H
 EA . . . . . . . . . . . . . . . . .  B  ADDR  00AFH  NOT USED
 EC . . . . . . . . . . . . . . . . .  B  ADDR  00AEH  NOT USED
 EECON. . . . . . . . . . . . . . . .  D  ADDR  0096H  NOT USED
-ERR. . . . . . . . . . . . . . . . .  C  ADDR  001AH
 ES . . . . . . . . . . . . . . . . .  B  ADDR  00ACH  NOT USED
 ET0. . . . . . . . . . . . . . . . .  B  ADDR  00A9H  NOT USED
 ET1. . . . . . . . . . . . . . . . .  B  ADDR  00ABH  NOT USED

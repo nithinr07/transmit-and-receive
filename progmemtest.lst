@@ -1,19 +1,14 @@
 progmemtest                                                                                                             PAGE 1
-0000 908000              1     mov dptr, #8000h
-0003 C083                2     push dph
-0005 C082                3     push dpl
-0007 90ED00              4     mov dptr, #0ed00h
-000A F0                  5     movx @dptr, A
-000B D082                6     pop dpl
-000D D083                7     pop dph
-000F F0                  8     movx @dptr, A
-0010 22                  9     ret
+0000 858361              1     mov 61h, dph
+0003 858260              2     mov 60h, dpl
+0006 12020B              3     lcall 020bh
+0009 22                  4     ret
 ****WARNING:Missing`END'directive
 ASSEMBLY COMPLETE, NO ERRORS FOUND, 1 WARNING
 
 
 ERROR SUMMARY:
-Line 9, WARNING:Missing`END'directive
+Line 4, WARNING:Missing`END'directive
 
 SYMBOL TABLE:
 ??MCU_8051_IDE . . . . . . . . . . .  N  NUMB  8051H  NOT USED

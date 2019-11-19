@@ -117,7 +117,8 @@ serial:		jb ti, trans
 		trans:	clr ti
 			reti
 
-display:	ANL A, #0FH
+display:	MOV A, DPL
+		ANL A, #0FH
 		MOV 50H,A
 		MOV A, DPL
 		SWAP A

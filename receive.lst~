@@ -118,62 +118,63 @@ receive                                                                         
 00C1 C299              117                     trans:  clr ti
 00C3 32                118                             reti
                        119
-00C4 540F              120     display:        ANL A, #0FH
-00C6 F550              121                     MOV 50H,A
-00C8 E582              122                     MOV A, DPL
-00CA C4                123                     SWAP A
-00CB 540F              124                     ANL A, #0FH
-00CD F551              125                     MOV 51H,A
-00CF E583              126                     MOV A, DPH
-00D1 540F              127                     ANL A, #0FH
-00D3 F552              128                     MOV 52H,A
-00D5 E583              129                     MOV A, DPH
-00D7 C4                130                     SWAP A
-00D8 540F              131                     ANL A, #0FH
-00DA F553              132                     MOV 53H,A
-00DC C082              133                     PUSH DPL
-00DE C083              134                     PUSH DPH
-00E0 901BB7            135                     MOV DPTR,#1BB7H
-00E3 E550              136                     MOV A,50H
-00E5 93                137                     MOVC A,@A+DPTR
-00E6 F550              138                     MOV 50H,A
-00E8 E551              139                     MOV A,51H
-00EA 93                140                     MOVC A,@A+DPTR
-00EB F551              141                     MOV 51H,A
-00ED E552              142                     MOV A,52H
-00EF 93                143                     MOVC A,@A+DPTR
-00F0 F552              144                     MOV 52H,A
-00F2 E553              145                     MOV A,53H
-00F4 93                146                     MOVC A,@A+DPTR
-00F5 F553              147                     MOV 53H,A
-00F7 90EC00            148                     MOV DPTR, #0EC00H
-00FA 7493              149                     MOV A, #93h
-00FC F0                150                     MOVX @dptr,A
-00FD A3                151                     INC DPTR
-00FE E550              152                     MOV A, 50H
-0100 F0                153                     MOVX @dptr,A
-0101 90EC00            154                     MOV DPTR, #0EC00H
-0104 7492              155                     MOV A, #92h
-0106 F0                156                     MOVX @dptr,A
-0107 A3                157                     INC DPTR
-0108 E551              158                     MOV A, 51H
-010A F0                159                     MOVX @dptr,A
-010B 90EC00            160                     MOV DPTR, #0EC00H
-010E 7491              161                     MOV A, #91h
-0110 F0                162                     MOVX @dptr,A
-0111 A3                163                     INC DPTR
-0112 E552              164                     MOV A, 52H
-0114 F0                165                     MOVX @dptr,A
-0115 90EC00            166                     MOV DPTR, #0EC00H
-0118 7490              167                     MOV A, #90h
-011A F0                168                     MOVX @dptr,A
-011B A3                169                     INC DPTR
-011C E553              170                     MOV A, 53H
-011E F0                171                     MOVX @dptr,A
-011F D083              172                     POP DPH
-0121 D082              173                     POP DPL
-0123 22                174                     RET
-                       175                     end
+00C4 E582              120     display:        MOV A, DPL
+00C6 540F              121                     ANL A, #0FH
+00C8 F550              122                     MOV 50H,A
+00CA E582              123                     MOV A, DPL
+00CC C4                124                     SWAP A
+00CD 540F              125                     ANL A, #0FH
+00CF F551              126                     MOV 51H,A
+00D1 E583              127                     MOV A, DPH
+00D3 540F              128                     ANL A, #0FH
+00D5 F552              129                     MOV 52H,A
+00D7 E583              130                     MOV A, DPH
+00D9 C4                131                     SWAP A
+00DA 540F              132                     ANL A, #0FH
+00DC F553              133                     MOV 53H,A
+00DE C082              134                     PUSH DPL
+00E0 C083              135                     PUSH DPH
+00E2 901BB7            136                     MOV DPTR,#1BB7H
+00E5 E550              137                     MOV A,50H
+00E7 93                138                     MOVC A,@A+DPTR
+00E8 F550              139                     MOV 50H,A
+00EA E551              140                     MOV A,51H
+00EC 93                141                     MOVC A,@A+DPTR
+00ED F551              142                     MOV 51H,A
+00EF E552              143                     MOV A,52H
+00F1 93                144                     MOVC A,@A+DPTR
+00F2 F552              145                     MOV 52H,A
+00F4 E553              146                     MOV A,53H
+00F6 93                147                     MOVC A,@A+DPTR
+00F7 F553              148                     MOV 53H,A
+00F9 90EC00            149                     MOV DPTR, #0EC00H
+00FC 7493              150                     MOV A, #93h
+00FE F0                151                     MOVX @dptr,A
+00FF A3                152                     INC DPTR
+0100 E550              153                     MOV A, 50H
+0102 F0                154                     MOVX @dptr,A
+0103 90EC00            155                     MOV DPTR, #0EC00H
+0106 7492              156                     MOV A, #92h
+0108 F0                157                     MOVX @dptr,A
+0109 A3                158                     INC DPTR
+010A E551              159                     MOV A, 51H
+010C F0                160                     MOVX @dptr,A
+010D 90EC00            161                     MOV DPTR, #0EC00H
+0110 7491              162                     MOV A, #91h
+0112 F0                163                     MOVX @dptr,A
+0113 A3                164                     INC DPTR
+0114 E552              165                     MOV A, 52H
+0116 F0                166                     MOVX @dptr,A
+0117 90EC00            167                     MOV DPTR, #0EC00H
+011A 7490              168                     MOV A, #90h
+011C F0                169                     MOVX @dptr,A
+011D A3                170                     INC DPTR
+011E E553              171                     MOV A, 53H
+0120 F0                172                     MOVX @dptr,A
+0121 D083              173                     POP DPH
+0123 D082              174                     POP DPL
+0125 22                175                     RET
+                       176                     end
 ASSEMBLY COMPLETE, NO ERRORS FOUND, NO WARNINGS
 
 

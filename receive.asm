@@ -104,7 +104,7 @@ serial:		jb ti, trans
 						mov dpl, R7
 						sjmp exit
 		cond7:	mov A, sbuf
-			lcall 18adh
+			;lcall 18adh
 			mov A, R1
 			add A, sbuf
 			mov R1, A
@@ -117,7 +117,8 @@ serial:		jb ti, trans
 		trans:	clr ti
 			reti
 
-display:	ANL A, #0FH
+display:	MOV A, DPL
+		ANL A, #0FH
 		MOV 50H,A
 		MOV A, DPL
 		SWAP A
