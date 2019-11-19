@@ -24,6 +24,8 @@ main:		mov tmod, #20h ;timer1 mode 2
 		mov R1, #00h ;checksum
 		mov R2, #00h ;ihex line counter
 		setb tr1
+		setb 2eh ;Used to determine the higher order first address
+		setb 2fh ;Used to determine the lower order first address
 		;setb ri
 		back:
 		sjmp back
@@ -51,19 +53,32 @@ serial:		jb ti, trans
 			mov A, R1
 			add A, dph
 			mov R1, A
+			jb 2eh, first_high
 			sjmp exit
+			first_high:	mov 30h, R6 ;30h stores higher order first address
+					clr 2eh
+					sjmp exit
 		cond4:	cjne R2, #03h, cond5
 			mov R7, sbuf
 			mov dpl, R7
 			mov A, R1
 			add A, dpl
 			mov R1, A
+			jb 2fh, first_low
 			sjmp exit
+			first_low:	mov 31h, R7 ;31h stores lower order first address
+					clr 2fh
+					sjmp exit
 		cond5:	cjne R2, #04h, cond6
 			mov A, sbuf
 			sub_cond1:	cjne A, #01h, sub_cond2
 					;end ;execute code
-					ljmp 0000h
+					;ljmp 0000h
+					mov dph, 30h
+					mov dpl, 31h
+					acall display
+					back1:
+					sjmp back1
 			sub_cond2:	mov A, R1
 					add A, sbuf
 					mov R1, A
@@ -89,7 +104,7 @@ serial:		jb ti, trans
 						mov dpl, R7
 						sjmp exit
 		cond7:	mov A, sbuf
-			movx @dptr, A
+			lcall 18adh
 			mov A, R1
 			add A, sbuf
 			mov R1, A
@@ -101,4 +116,60 @@ serial:		jb ti, trans
 			reti
 		trans:	clr ti
 			reti
-			end
+
+display:	ANL A, #0FH
+		MOV 50H,A
+		MOV A, DPL
+		SWAP A
+		ANL A, #0FH
+		MOV 51H,A
+		MOV A, DPH
+		ANL A, #0FH
+		MOV 52H,A
+		MOV A, DPH
+		SWAP A
+		ANL A, #0FH
+		MOV 53H,A
+		PUSH DPL
+		PUSH DPH
+		MOV DPTR,#1BB7H
+		MOV A,50H
+		MOVC A,@A+DPTR
+		MOV 50H,A
+		MOV A,51H
+		MOVC A,@A+DPTR
+		MOV 51H,A
+		MOV A,52H
+		MOVC A,@A+DPTR
+		MOV 52H,A
+		MOV A,53H
+		MOVC A,@A+DPTR
+		MOV 53H,A
+		MOV DPTR, #0EC00H
+		MOV A, #93h
+		MOVX @dptr,A
+		INC DPTR
+		MOV A, 50H
+		MOVX @dptr,A
+		MOV DPTR, #0EC00H
+		MOV A, #92h
+		MOVX @dptr,A
+		INC DPTR
+		MOV A, 51H
+		MOVX @dptr,A
+		MOV DPTR, #0EC00H
+		MOV A, #91h
+		MOVX @dptr,A
+		INC DPTR
+		MOV A, 52H
+		MOVX @dptr,A
+		MOV DPTR, #0EC00H
+		MOV A, #90h
+		MOVX @dptr,A
+		INC DPTR
+		MOV A, 53H
+		MOVX @dptr,A
+		POP DPH
+		POP DPL
+		RET
+		end

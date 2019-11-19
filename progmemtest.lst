@@ -1,146 +1,19 @@
-transmit                                                                                                                PAGE 1
-                         1     ;30h - lower order start addr
-                         2     ;31h - higher order start addr
-                         3     ;32h - lower order end addr
-                         4     ;33h - higher order end addr
-                         5     ;34h - baud rate (must do FF-@34h)
-                         6     ;35h - lower order result
-                         7     ;36h - higher order result
-                         8     ;37h - R3 + 5
-                         9     ;R1 - checksum
-                        10     ;R2 - ihex line counter (byte number for that ihex line)
-                        11     ;R3 - line length
-                        12     ;R4 - no of ihex lines with data length = 255
-                        13     ;R5 - length of last possibly non-255 length line
-                        14
-                        15     org 0h
-0000 020026             16     ljmp main
-                        17     org 23h
-0023 020071             18     ljmp serial
-0026 753310             19     main:           mov 33h, #10h
-0029 753230             20                     mov 32h, #30h
-002C 753110             21                     mov 31h, #10h
-002F 753020             22                     mov 30h, #20h
-                        23                     ;acall length_calc
-                        24                     ;lcall baud_calc
-0032 C3                 25                     clr c
-0033 E532               26                     mov A, 32h
-0035 9530               27                     subb A, 30h
-0037 F535               28                     mov 35h, A
-0039 E533               29                     mov A, 33h
-003B 9531               30                     subb A, 31h
-003D F536               31                     mov 36h, A
-003F 7900               32                     mov R1, #00h ;checksum
-0041 7A00               33                     mov R2, #00h ;line counter
-0043 7B00               34                     mov R3, #00h ;line length (256 or 35h)
-0045 AC36               35                     mov R4, 36h ;no of ihex lines with data length = 255
-0047 AD35               36                     mov R5, 35h ;length of last possibly non-255 length line
-0049 ED                 37                     mov A, R5
-004A C3                 38                     clr c
-004B C22E               39                     clr 2eh ; This bit is used to check if all lines have been transmitted. If so, send E
-004D 2C                 40                     add A, R4
-004E FD                 41                     mov R5, A
-004F 7400               42                     mov A, #00h
-0051 3C                 43                     addc A, R4
-0052 FC                 44                     mov R4, A
-0053 853183             45                     mov dph, 31h ;setting dptr to start addr
-0056 853082             46                     mov dpl, 30h
-0059 758920             47                     mov tmod, #20h ;timer 1, mode 2
-005C 7534FD             48                     mov 34h, #0fdh
-005F 85348D             49                     mov th1, 34h ;input baud rate
-0062 85348B             50                     mov tl1, 34h
-0065 759840             51                     mov scon, #40h ;8-bit UART with REN = 0
-0068 75A890             52                     mov ie, #90h ;enable serial interrupt
-006B D28E               53                     setb tr1
-006D D299               54                     setb ti
-                        55                     back:
-006F 80FE               56                     sjmp back
-                        57
-0071 C299               58     serial:         clr ti
-0073 BA0005             59                     cond1:  cjne R2, #00h, cond2
-0076 75993A             60                             mov sbuf, #3ah
-0079 8062               61                             sjmp exit
-007B BA0111             62                     cond2: cjne R2, #01h, cond3
-007E BC0004             63                                     cjne R4, #00h, sub_cond2
-                        64                                             ;if R4==0
-0081 ED                 65                                             mov A, R5
-0082 FB                 66                                             mov R3, A
-0083 8003               67                                             sjmp ex
-                        68                                             ;if R4!=0
-0085 7BFF               69                                     sub_cond2:      mov R3, #0ffh
-0087 1C                 70                                                     dec R4
-0088 E9                 71                             ex:     mov A, R1
-0089 2B                 72                                     add A, R3
-008A F9                 73                                     mov R1, A
-008B 8B99               74                                     mov sbuf, R3
-008D 804E               75                                     sjmp exit
-008F BA0209             76                     cond3: cjne R2, #02h, cond4
-0092 E9                 77                                     mov A, R1
-0093 2531               78                                     add A, 31h
-0095 F9                 79                                     mov R1, A
-0096 853199             80                                     mov sbuf, 31h
-0099 8042               81                                     sjmp exit
-009B BA0309             82                     cond4: cjne R2, #03h, cond5
-009E E9                 83                                     mov A, R1
-009F 2530               84                                     add A, 30h
-00A1 F9                 85                                     mov R1, A
-00A2 853099             86                                     mov sbuf, 30h
-00A5 8036               87                                     sjmp exit
-00A7 BA0410             88                     cond5: cjne R2, #04h, cond6
-00AA 202E05             89                                     jb 2eh, eof
-00AD 759900             90                                     mov sbuf, #00h
-00B0 802B               91                                     sjmp exit
-00B2 759901             92                                     eof:    mov sbuf, #01h
-00B5 C22E               93                                             clr 2eh
-00B7 020000             94                                             ljmp 0000h
-                        95                     ;should always be executed
-                        96                     cond6:  ;mov A, R2
-                        97                             ;clr c
-                        98                             ;subb A, R3
-00BA BB0019             99                             cjne R3, #00h, cond7 ;if(R2-R3==5)
-                       100                             ;checksum
-00BD E9                101                                     mov A, R1
-00BE F4                102                                     cpl A
-00BF 2401              103                                     add A, #01h
-00C1 F599              104                                     mov sbuf, A
-00C3 7AFF              105                                     mov R2, #0ffh
-00C5 7900              106                                     mov R1, #00h
-00C7 858230            107                                     mov 30h, DPL
-00CA 858331            108                                     mov 31h, DPH
-00CD BC0004            109                                     cjne R4, #00h, not_last
-00D0 D22E              110                                     setb 2eh
-00D2 8009              111                                     sjmp exit
-00D4 8007              112                                     not_last:       sjmp exit
-                       113                     ;else
-00D6 E0                114                     cond7:  movx A, @dptr
-00D7 29                115                             add A, R1
-00D8 F9                116                             mov R1, A
-00D9 F599              117                             mov sbuf, A
-00DB A3                118                             inc dptr
-00DC 1B                119                             dec R3
-00DD 0A                120                     exit:   inc R2
-00DE C3                121                             clr c
-00DF 32                122                     reti
-                       123     ;16 bit subtraction
-                       124     ;length_calc:   clr c
-                       125     ;               mov A, 32h
-                       126     ;               subb A, 30h
-                       127     ;               mov 35h, A
-                       128     ;               mov A, 33h
-                       129     ;               subb A, 31h
-                       130     ;               mov 36h, A
-                       131     ;               ret
-                       132
-                       133     ;baud_calc:     mov A, #0ffh
-                       134     ;               subb A, 34h
-                       135     ;               mov 34h, A
-                       136     ;               ret
+progmemtest                                                                                                             PAGE 1
+0000 908000              1     mov dptr, #8000h
+0003 C083                2     push dph
+0005 C082                3     push dpl
+0007 90ED00              4     mov dptr, #0ed00h
+000A F0                  5     movx @dptr, A
+000B D082                6     pop dpl
+000D D083                7     pop dph
+000F F0                  8     movx @dptr, A
+0010 22                  9     ret
 ****WARNING:Missing`END'directive
 ASSEMBLY COMPLETE, NO ERRORS FOUND, 1 WARNING
 
 
 ERROR SUMMARY:
-Line 136, WARNING:Missing`END'directive
+Line 9, WARNING:Missing`END'directive
 
 SYMBOL TABLE:
 ??MCU_8051_IDE . . . . . . . . . . .  N  NUMB  8051H  NOT USED
@@ -156,7 +29,6 @@ ADDL . . . . . . . . . . . . . . . .  D  ADDR  00F4H  NOT USED
 AUXR . . . . . . . . . . . . . . . .  D  ADDR  008EH  NOT USED
 AUXR1. . . . . . . . . . . . . . . .  D  ADDR  00A2H  NOT USED
 B. . . . . . . . . . . . . . . . . .  D  ADDR  00F0H  NOT USED
-BACK . . . . . . . . . . . . . . . .  C  ADDR  006FH
 BDRCON . . . . . . . . . . . . . . .  D  ADDR  009BH  NOT USED
 BDRCON_1 . . . . . . . . . . . . . .  D  ADDR  009CH  NOT USED
 BRL. . . . . . . . . . . . . . . . .  D  ADDR  009AH  NOT USED
@@ -193,13 +65,6 @@ CKSEL. . . . . . . . . . . . . . . .  D  ADDR  0085H  NOT USED
 CL . . . . . . . . . . . . . . . . .  D  ADDR  00E9H  NOT USED
 CLKREG . . . . . . . . . . . . . . .  D  ADDR  008FH  NOT USED
 CMOD . . . . . . . . . . . . . . . .  D  ADDR  00D9H  NOT USED
-COND1. . . . . . . . . . . . . . . .  C  ADDR  0073H  NOT USED
-COND2. . . . . . . . . . . . . . . .  C  ADDR  007BH
-COND3. . . . . . . . . . . . . . . .  C  ADDR  008FH
-COND4. . . . . . . . . . . . . . . .  C  ADDR  009BH
-COND5. . . . . . . . . . . . . . . .  C  ADDR  00A7H
-COND6. . . . . . . . . . . . . . . .  C  ADDR  00BAH
-COND7. . . . . . . . . . . . . . . .  C  ADDR  00D6H
 CPRL2. . . . . . . . . . . . . . . .  B  ADDR  00C8H  NOT USED
 CR . . . . . . . . . . . . . . . . .  B  ADDR  00DEH  NOT USED
 CT2. . . . . . . . . . . . . . . . .  B  ADDR  00C9H  NOT USED
@@ -213,22 +78,19 @@ DPL. . . . . . . . . . . . . . . . .  D  ADDR  0082H
 EA . . . . . . . . . . . . . . . . .  B  ADDR  00AFH  NOT USED
 EC . . . . . . . . . . . . . . . . .  B  ADDR  00AEH  NOT USED
 EECON. . . . . . . . . . . . . . . .  D  ADDR  0096H  NOT USED
-EOF. . . . . . . . . . . . . . . . .  C  ADDR  00B2H
 ES . . . . . . . . . . . . . . . . .  B  ADDR  00ACH  NOT USED
 ET0. . . . . . . . . . . . . . . . .  B  ADDR  00A9H  NOT USED
 ET1. . . . . . . . . . . . . . . . .  B  ADDR  00ABH  NOT USED
 ET2. . . . . . . . . . . . . . . . .  B  ADDR  00ADH  NOT USED
-EX . . . . . . . . . . . . . . . . .  C  ADDR  0088H
 EX0. . . . . . . . . . . . . . . . .  B  ADDR  00A8H  NOT USED
 EX1. . . . . . . . . . . . . . . . .  B  ADDR  00AAH  NOT USED
 EXEN2. . . . . . . . . . . . . . . .  B  ADDR  00CBH  NOT USED
 EXF2 . . . . . . . . . . . . . . . .  B  ADDR  00CEH  NOT USED
-EXIT . . . . . . . . . . . . . . . .  C  ADDR  00DDH
 EXTI0. . . . . . . . . . . . . . . .  C  ADDR  0003H  NOT USED
 EXTI1. . . . . . . . . . . . . . . .  C  ADDR  0013H  NOT USED
 F0 . . . . . . . . . . . . . . . . .  B  ADDR  00D5H  NOT USED
 FE . . . . . . . . . . . . . . . . .  B  ADDR  009FH  NOT USED
-IE . . . . . . . . . . . . . . . . .  D  ADDR  00A8H
+IE . . . . . . . . . . . . . . . . .  D  ADDR  00A8H  NOT USED
 IE0. . . . . . . . . . . . . . . . .  B  ADDR  0089H  NOT USED
 IE1. . . . . . . . . . . . . . . . .  B  ADDR  008BH  NOT USED
 INT0 . . . . . . . . . . . . . . . .  B  ADDR  00B2H  NOT USED
@@ -244,8 +106,6 @@ IT1. . . . . . . . . . . . . . . . .  B  ADDR  008AH  NOT USED
 KBE. . . . . . . . . . . . . . . . .  D  ADDR  009DH  NOT USED
 KBF. . . . . . . . . . . . . . . . .  D  ADDR  009EH  NOT USED
 KBLS . . . . . . . . . . . . . . . .  D  ADDR  009CH  NOT USED
-MAIN . . . . . . . . . . . . . . . .  C  ADDR  0026H
-NOT_LAST . . . . . . . . . . . . . .  C  ADDR  00D4H
 OSCCON . . . . . . . . . . . . . . .  D  ADDR  0086H  NOT USED
 OV . . . . . . . . . . . . . . . . .  B  ADDR  00D2H  NOT USED
 P. . . . . . . . . . . . . . . . . .  B  ADDR  00D0H  NOT USED
@@ -294,9 +154,8 @@ SADDR_1. . . . . . . . . . . . . . .  D  ADDR  00AAH  NOT USED
 SADEN. . . . . . . . . . . . . . . .  D  ADDR  00B9H  NOT USED
 SADEN_0. . . . . . . . . . . . . . .  D  ADDR  00B9H  NOT USED
 SADEN_1. . . . . . . . . . . . . . .  D  ADDR  00BAH  NOT USED
-SBUF . . . . . . . . . . . . . . . .  D  ADDR  0099H
-SCON . . . . . . . . . . . . . . . .  D  ADDR  0098H
-SERIAL . . . . . . . . . . . . . . .  C  ADDR  0071H
+SBUF . . . . . . . . . . . . . . . .  D  ADDR  0099H  NOT USED
+SCON . . . . . . . . . . . . . . . .  D  ADDR  0098H  NOT USED
 SINT . . . . . . . . . . . . . . . .  C  ADDR  0023H  NOT USED
 SM0. . . . . . . . . . . . . . . . .  B  ADDR  009FH  NOT USED
 SM1. . . . . . . . . . . . . . . . .  B  ADDR  009EH  NOT USED
@@ -308,7 +167,6 @@ SPDAT. . . . . . . . . . . . . . . .  D  ADDR  00C5H  NOT USED
 SPDR . . . . . . . . . . . . . . . .  D  ADDR  0086H  NOT USED
 SPSR . . . . . . . . . . . . . . . .  D  ADDR  00AAH  NOT USED
 SPSTA. . . . . . . . . . . . . . . .  D  ADDR  00C4H  NOT USED
-SUB_COND2. . . . . . . . . . . . . .  C  ADDR  0085H
 T0 . . . . . . . . . . . . . . . . .  B  ADDR  00B4H  NOT USED
 T1 . . . . . . . . . . . . . . . . .  B  ADDR  00B5H  NOT USED
 T2CON. . . . . . . . . . . . . . . .  D  ADDR  00C8H  NOT USED
@@ -320,18 +178,18 @@ TF0. . . . . . . . . . . . . . . . .  B  ADDR  008DH  NOT USED
 TF1. . . . . . . . . . . . . . . . .  B  ADDR  008FH  NOT USED
 TF2. . . . . . . . . . . . . . . . .  B  ADDR  00CFH  NOT USED
 TH0. . . . . . . . . . . . . . . . .  D  ADDR  008CH  NOT USED
-TH1. . . . . . . . . . . . . . . . .  D  ADDR  008DH
+TH1. . . . . . . . . . . . . . . . .  D  ADDR  008DH  NOT USED
 TH2. . . . . . . . . . . . . . . . .  D  ADDR  00CDH  NOT USED
-TI . . . . . . . . . . . . . . . . .  B  ADDR  0099H
+TI . . . . . . . . . . . . . . . . .  B  ADDR  0099H  NOT USED
 TIMER0 . . . . . . . . . . . . . . .  C  ADDR  000BH  NOT USED
 TIMER1 . . . . . . . . . . . . . . .  C  ADDR  001BH  NOT USED
 TIMER2 . . . . . . . . . . . . . . .  C  ADDR  002BH  NOT USED
 TL0. . . . . . . . . . . . . . . . .  D  ADDR  008AH  NOT USED
-TL1. . . . . . . . . . . . . . . . .  D  ADDR  008BH
+TL1. . . . . . . . . . . . . . . . .  D  ADDR  008BH  NOT USED
 TL2. . . . . . . . . . . . . . . . .  D  ADDR  00CCH  NOT USED
-TMOD . . . . . . . . . . . . . . . .  D  ADDR  0089H
+TMOD . . . . . . . . . . . . . . . .  D  ADDR  0089H  NOT USED
 TR0. . . . . . . . . . . . . . . . .  B  ADDR  008CH  NOT USED
-TR1. . . . . . . . . . . . . . . . .  B  ADDR  008EH
+TR1. . . . . . . . . . . . . . . . .  B  ADDR  008EH  NOT USED
 TR2. . . . . . . . . . . . . . . . .  B  ADDR  00CAH  NOT USED
 TXD. . . . . . . . . . . . . . . . .  B  ADDR  00B1H  NOT USED
 WDTCON . . . . . . . . . . . . . . .  D  ADDR  00A7H  NOT USED

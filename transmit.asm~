@@ -64,14 +64,15 @@ serial:		clr ti
 					;if R4==0
 					mov A, R5
 					mov R3, A
+					sjmp ex
 					;if R4!=0
 		        	sub_cond2:	mov R3, #0ffh
 						dec R4
-			mov A, R1
-			add A, R3
-			mov R1, A
-			mov sbuf, R3
-			sjmp exit
+			ex:	mov A, R1
+				add A, R3
+				mov R1, A
+				mov sbuf, R3
+				sjmp exit
 		cond3: cjne R2, #02h, cond4
 				mov A, R1
 				add A, 31h
@@ -111,9 +112,9 @@ serial:		clr ti
 				not_last:	sjmp exit
 		;else
 		cond7:  movx A, @dptr
+			mov sbuf, A
 			add A, R1
 			mov R1, A
-			mov sbuf, A
 			inc dptr
 			dec R3
 		exit: 	inc R2
